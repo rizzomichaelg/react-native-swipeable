@@ -5,6 +5,7 @@
   "main": "lib/index.js",
   "scripts": {
     "build": "make build",
+    "prepare": "make build > /dev/null",
     "lint": "make lint"
   },
   "author": "Jeff Hanson",
