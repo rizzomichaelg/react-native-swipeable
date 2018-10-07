@@ -659,7 +659,8 @@ export default class Swipeable extends PureComponent {
 
 const styles = StyleSheet.create({
   container: {
-    flexDirection: 'row'
+    flexDirection: 'row',
+    overflow: 'hidden'
   },
   content: {
     flex: 1
