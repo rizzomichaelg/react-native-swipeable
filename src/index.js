@@ -154,7 +154,8 @@ export default class Swipeable extends PureComponent {
     onRef: noop,
     onPanAnimatedValueRef: noop,
     swipeStartMinDistance: 15,
-    disable: false
+    bounceOnMount: false,
+    disable: false,
   };
 
   state = {
@@ -174,6 +175,12 @@ export default class Swipeable extends PureComponent {
 
     onRef(this);
     onPanAnimatedValueRef(this.state.pan);
+  }
+
+  componentDidMount() {
+    if (this.props.bounceOnMount) {
+      setTimeout(this._bounceOnMount, 700);
+    }
   }
 
   componentWillUnmount() {
@@ -204,6 +211,48 @@ export default class Swipeable extends PureComponent {
     } else {
       this.props.swipeReleaseAnimationFn(pan, this.props.swipeReleaseAnimationConfig).start(onDone);
     }
+  };
+
+  _bounceOnMount = () => {
+    if (this._canSwipeLeft()) {
+      this.bounceRight(this.bounceLeft);
+    } else if (this._canSwipeRight()) {
+      this.bounceLeft();
+    }
+  };
+
+  bounceRight = (onDone) => {
+    if (this._canSwipeLeft()) {
+      this.setState({
+        rightActionActivated: true,
+        rightButtonsActivated: true,
+        rightButtonsOpen: true
+      });
+      this._bounce({x: -50, y: 0}, onDone);
+    }
+  };
+
+  bounceLeft = (onDone) => {
+    if (this._canSwipeRight()) {
+      this.setState({
+        leftActionActivated: true,
+        leftButtonsActivated: true,
+        leftButtonsOpen: true
+      });
+      this._bounce({x: 50, y: 0}, onDone);
+    }
+  };
+
+  _bounce = (toValue, onDone) => {
+    const {pan} = this.state;
+    pan.flattenOffset();
+
+    const {swipeReleaseAnimationFn, swipeReleaseAnimationConfig} = this.props;
+    Animated.timing(pan, {
+      toValue,
+      duration: 250,
+      easing: Easing.elastic(0.5)
+    }).start(() => this.recenter(swipeReleaseAnimationFn, swipeReleaseAnimationConfig, () => onDone && onDone()));
   };
 
   _unmounted = false;
